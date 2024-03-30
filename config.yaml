@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mon-deploiement
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: mon-application
+  template:
+    metadata:
+      labels:
+        app: mon-application
+    spec:
+      containers:
+        - name: conteneur-kubernetes
+          image: app_kubernetes:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MANAGEMENT_ENDPOINTS_WEB_BASEPATH
+              value: /actuator # Définir le chemin de base pour tous les endpoints actuator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mon-service
+  labels:
+    job: node-api
+    app: mon-application
+spec:
+  selector:
+    app: mon-application # Sélecteur pour cibler les pods appartenant à votre application
+  ports:
+    - name: web
+      protocol: TCP
+      port: 8080 # Port sur lequel le service écoutera
+      targetPort: 8080 # Port auquel les requêtes seront acheminées dans les pods
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: api-service-monitor
+  labels:
+    release: prometheus-new
+    app: prometheus-new
+spec:
+  jobLabel: job
+  endpoints:
+    - interval: 30s
+      port: web
+      path: /actuator/prometheus
+  selector:
+    matchLabels:
+      app: mon-application

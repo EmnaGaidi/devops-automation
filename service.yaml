@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mon-service
+  labels:
+    job: node-api
+    app: mon-application
+spec:
+  selector:
+    app: mon-application # Sélecteur pour cibler les pods appartenant à votre application
+  ports:
+    - name: web
+      protocol: TCP
+      port: 80 # Port sur lequel le service écoutera
+      targetPort: 8080 # Port auquel les requêtes seront acheminées dans les pods

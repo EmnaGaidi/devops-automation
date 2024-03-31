@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mon-deploiement
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: mon-application
+  template:
+    metadata:
+      labels:
+        app: mon-application
+    spec:
+      containers:
+        - name: conteneur-kubernetes
+          image: app_kubernetes:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mon-service
+  labels:
+    job: node-api
+    app: mon-application
+spec:
+  selector:
+    app: mon-application # Sélecteur pour cibler les pods appartenant à votre application
+  ports:
+    - name: web
+      protocol: TCP
+      port: 80 # Port sur lequel le service écoutera
+      targetPort: 8080 # Port auquel les requêtes seront acheminées dans les pods
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mon-service-externe
+spec:
+  selector:
+    app: mon-application
+  ports:
+    - protocol: TCP
+      port: 81 # Port sur lequel le service écoutera
+      targetPort: 8080 # Port auquel les requêtes seront acheminées dans les pods
+  type: LoadBalancer # Type de service pour l'exposition externe
